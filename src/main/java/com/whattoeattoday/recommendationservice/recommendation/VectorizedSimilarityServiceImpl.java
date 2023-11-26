@@ -110,6 +110,9 @@ public class VectorizedSimilarityServiceImpl implements VectorizedSimilarityServ
 
             System.out.println(
                     String.format("Job finished successfully: %s", new String(blob.getContent())));
+            String dataprocLog = new String(blob.getContent());
+            String[] dataprocLogLines = dataprocLog.split("\\r?\\n");
+            System.out.printf("Last line: %s%n", dataprocLogLines[dataprocLogLines.length-1]);
         }
         return null;
 //        return BaseResponse.with(Status.SUCCESS, resultList);
