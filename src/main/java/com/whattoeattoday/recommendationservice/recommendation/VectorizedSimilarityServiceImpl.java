@@ -98,6 +98,8 @@ public class VectorizedSimilarityServiceImpl implements VectorizedSimilarityServ
 
             Job response = submitJobAsOperationAsyncRequest.get();
 
+            System.out.println("response.getDriverOutputResourceUri(): "+ response.getDriverOutputResourceUri());
+
             // Print output from Google Cloud Storage.
             Matcher matches =
                     Pattern.compile("gs://(.*?)/(.*)").matcher(response.getDriverOutputResourceUri());
