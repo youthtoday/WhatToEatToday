@@ -26,7 +26,7 @@ public class RecommendationController {
      * @param request
      */
     @PostMapping("/recommend/item")
-    public BaseResponse<List<Integer>> recommendOnItem(@RequestBody GetVectorizedSimilarityRankOnMultiFieldRequest request) throws IOException, ExecutionException, InterruptedException {
+    public BaseResponse<List<String>> recommendOnItem(@RequestBody GetVectorizedSimilarityRankOnMultiFieldRequest request) throws IOException, ExecutionException, InterruptedException {
         return vectorizedSimilarityService.getVectorizedSimilarityRankOnMultiField(request);
     }
 }

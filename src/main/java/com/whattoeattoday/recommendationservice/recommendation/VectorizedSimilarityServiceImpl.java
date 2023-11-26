@@ -4,17 +4,7 @@ import com.whattoeattoday.recommendationservice.common.BaseResponse;
 import com.whattoeattoday.recommendationservice.common.Status;
 import com.whattoeattoday.recommendationservice.recommendation.request.GetVectorizedSimilarityRankOnMultiFieldRequest;
 import com.whattoeattoday.recommendationservice.recommendation.request.GetVectorizedSimilarityRankRequest;
-import org.apache.spark.ml.feature.HashingTF;
-import org.apache.spark.ml.feature.IDF;
-import org.apache.spark.ml.feature.IDFModel;
-import org.apache.spark.ml.feature.Tokenizer;
-import org.apache.spark.ml.linalg.Vector;
-import org.apache.spark.ml.linalg.Vectors;
-import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
-import org.apache.spark.sql.RowFactory;
-import org.apache.spark.sql.SparkSession;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Service;
 import com.google.api.gax.longrunning.OperationFuture;
@@ -53,7 +43,7 @@ public class VectorizedSimilarityServiceImpl implements VectorizedSimilarityServ
     }
 
     @Override
-    public BaseResponse<List<Integer>> getVectorizedSimilarityRankOnMultiField(GetVectorizedSimilarityRankOnMultiFieldRequest request) throws IOException, ExecutionException, InterruptedException {
+    public BaseResponse<List<String>> getVectorizedSimilarityRankOnMultiField(GetVectorizedSimilarityRankOnMultiFieldRequest request) throws IOException, ExecutionException, InterruptedException {
         // TODO Param Check
         // TODO Double Type Unsupported
         String tableName = request.getCategoryName();
@@ -70,6 +60,8 @@ public class VectorizedSimilarityServiceImpl implements VectorizedSimilarityServ
         // Configure the settings for the job controller client.
         JobControllerSettings jobControllerSettings =
                 JobControllerSettings.newBuilder().setEndpoint(myEndpoint).build();
+
+        List<String> resultList = null;
 
         // Create a job controller client with the configured settings. Using a try-with-resources
         // closes the client,
@@ -108,13 +100,18 @@ public class VectorizedSimilarityServiceImpl implements VectorizedSimilarityServ
             Storage storage = StorageOptions.getDefaultInstance().getService();
             Blob blob = storage.get(matches.group(1), String.format("%s.000000000", matches.group(2)));
 
-            System.out.println(
-                    String.format("Job finished successfully: %s", new String(blob.getContent())));
             String dataprocLog = new String(blob.getContent());
+            System.out.println(
+                    String.format("Job finished successfully: %s", dataprocLog));
+
             String[] dataprocLogLines = dataprocLog.split("\\r?\\n");
             System.out.printf("Last line: %s%n", dataprocLogLines[dataprocLogLines.length-1]);
-        }
-        return null;
-//        return BaseResponse.with(Status.SUCCESS, resultList);
+
+            String resultStr = dataprocLogLines[dataprocLogLines.length-1];
+            String[] resultArr = resultStr.split(",");
+            resultList = Arrays.asList(resultArr);
+            return BaseResponse.with(Status.SUCCESS, resultList);
+        } catch (Exception ignored) {}
+        return BaseResponse.with(Status.FAILURE, "Dataproc Error");
     }
 }
